@@ -6,10 +6,49 @@ public class Player : MonoBehaviour{
 
     [SerializeField] private float moveSpeed = 15f;
     [SerializeField] private GameInput gameInput;
+    [SerializeField] private LayerMask countersLayerMask;
     private bool isWalking;
+    private Vector3 lastInteractDir;
+
 
     // Update is called once per frame
     void Update(){
+        HandleMovement();
+        HandleInteraction();
+    }
+
+    public bool IsWalking() {
+        return isWalking;
+    }
+
+    private void HandleInteraction() {
+        Vector2 inputVector = gameInput.GetMovementVectorNormalised();
+        Vector3 moveDir = new Vector3(inputVector.x, 0f, inputVector.y);
+
+        if(moveDir != Vector3.zero) {
+            lastInteractDir = moveDir;
+        }
+
+        float interactDistance = 2f;
+        if(Physics.Raycast(transform.position, lastInteractDir, out RaycastHit raycastHit, interactDistance, countersLayerMask)) {
+            if(raycastHit.transform.TryGetComponent(out ClearCounter clearCounter)) {
+                // Has ClearCounter
+                clearCounter.interact();
+            }
+
+            /*
+            // Functionality of TryGetComponent
+            ClearCounter clearCounter1 = raycastHit.transform.GetComponent<ClearCounter>(); 
+            if(clearCounter1 != null) {
+                // Has ClearCounter
+            }*/
+        }
+        else {
+            // Debug.Log("-");
+        }
+    }
+
+    private void HandleMovement() {
         Vector2 inputVector = gameInput.GetMovementVectorNormalised();
 
         // Move in the direction of input vector
@@ -20,7 +59,7 @@ public class Player : MonoBehaviour{
         float playerRadius = .7f;
         float playerHeight = 2f;
         /* bool canMove = !Physics.Raycast(transform.position, moveDir, playerRadius); // Raycast casues problem on the edges */
-        bool canMove = !Physics.CapsuleCast(transform.position, transform.position+Vector3.up*playerHeight, playerRadius, moveDir, moveDistance);
+        bool canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDir, moveDistance);
 
         // Handle Diagonal Movement
         if (!canMove) {
@@ -49,9 +88,5 @@ public class Player : MonoBehaviour{
         transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotateSpeed);
 
         // Debug.Log(inputVector);
-    }
-
-    public bool IsWalking() {
-        return isWalking;
     }
 }

@@ -32,7 +32,7 @@ public class GameInput : MonoBehaviour{
             inputVector.x = +1;
         }
 
-        Debug.Log(inputVector);
+        // Debug.Log(inputVector);
 
         // Normalize Input to have same magnitude
         inputVector = inputVector.normalized;
